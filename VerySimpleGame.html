@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running and Jumping Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const character = {
+            x: 50,
+            y: canvas.height - 50,
+            width: 50,
+            height: 50,
+            xSpeed: 5,
+            ySpeed: 0,
+            isJumping: false,
+        };
+
+        const obstacles = [];
+        let score = 0;
+
+        function jump() {
+            if (!character.isJumping) {
+                character.ySpeed = -10;
+                character.isJumping = true;
+            }
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            character.x += character.xSpeed;
+            character.y += character.ySpeed;
+
+            // Gravity
+            if (character.y < canvas.height - character.height) {
+                character.ySpeed += 0.5;
+            } else {
+                character.y = canvas.height - character.height;
+                character.isJumping = false;
+            }
+
+            // Create new obstacles
+            if (Math.random() < 0.02) {
+                obstacles.push({
+                    x: canvas.width,
+                    y: canvas.height - 50 - Math.random() * 100,
+                    width: 30 + Math.random() * 30,
+                    height: 30 + Math.random() * 30,
+                });
+            }
+
+            // Update and draw obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= character.xSpeed;
+
+                ctx.fillStyle = "red";
+                ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+
+                if (
+                    character.x < obstacles[i].x + obstacles[i].width &&
+                    character.x + character.width > obstacles[i].x &&
+                    character.y < obstacles[i].y + obstacles[i].height &&
+                    character.y + character.height > obstacles[i].y
+                ) {
+                    // Game over
+                    alert("Game over! Your score: " + score);
+                    location.reload();
+                }
+
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
+            }
+
+            // Draw character
+            ctx.fillStyle = "blue";
+            ctx.fillRect(character.x, character.y, character.width, character.height);
+
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp" || event.key === " ") {
+                jump();
+            }
+        });
+
+        update();
+    </script>
+</body>
+</html>
